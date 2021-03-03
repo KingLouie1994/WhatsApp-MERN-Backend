@@ -15,6 +15,22 @@ app.get("/", (req, res, next) => {
   res.status(200).send("Welcome to the WhatsApp Clone API");
 });
 
-// App listening
+// Connenting to DB and app listening
 const port = process.env.PORT || 8000;
-app.listen(port, () => console.log(`API running on port:${port}`));
+mongoose
+  .connect(
+    `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@portfolio.us1zu.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`,
+    {
+      useCreateIndex: true,
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+    }
+  )
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`API running on port:${port}`);
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
