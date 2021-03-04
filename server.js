@@ -12,6 +12,12 @@ const app = express();
 require("dotenv").config();
 app.use(express.json());
 
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  next();
+});
+
 // Configure and initialising pusher for real time updates
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID,
