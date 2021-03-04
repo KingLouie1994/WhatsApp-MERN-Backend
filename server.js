@@ -3,6 +3,7 @@ const express = require("express");
 
 // Importing other libraries
 const mongoose = require("mongoose");
+const Pusher = require("pusher");
 
 // Initialising express application
 const app = express();
@@ -10,6 +11,15 @@ const app = express();
 // Middleware
 require("dotenv").config();
 app.use(express.json());
+
+// Configure and initialising pusher for real time updates
+const pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID,
+  key: process.env.PUSHER_KEY,
+  secret: process.env.PUSHER_SECRET,
+  cluster: process.env.PUSHER_CLUSTER,
+  useTLS: true,
+});
 
 // Welcome Route
 app.get("/", (req, res, next) => {
@@ -41,3 +51,24 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
+
+const db = mongoose.connection;
+
+// Use pusher to recognise changes on DB
+db.once("open", () => {
+  console.log("DB connected");
+  const msgCollection = db.collection("messages");
+  const changeStream = msgCollection.watch();
+  changeStream.on("change", (change) => {
+    console.log(change);
+    if (change.operationType === "insert") {
+      const messageDetails = change.fullDocument;
+      pusher.trigger("messages", "inserted", {
+        name: messageDetails.name,
+        message: messageDetails.message,
+      });
+    } else {
+      console.log("Error triggering Pusher");
+    }
+  });
+});
