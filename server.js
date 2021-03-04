@@ -9,11 +9,18 @@ const app = express();
 
 // Middleware
 require("dotenv").config();
+app.use(express.json());
 
 // Welcome Route
 app.get("/", (req, res, next) => {
   res.status(200).send("Welcome to the WhatsApp Clone API");
 });
+
+// Import Routes
+const messageRoute = require("./routes/messages");
+
+// Use of Routes
+app.use("/api/messages", messageRoute);
 
 // Connenting to DB and app listening
 const port = process.env.PORT || 8000;
